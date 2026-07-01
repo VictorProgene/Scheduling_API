@@ -1,6 +1,6 @@
 from typing import Optional, List
 from sqlmodel import SQLModel, Field, Relationship
-from app.models import Appointment
+# from app.models.appointment import Appointment
 
 
 class User(SQLModel, table=True):

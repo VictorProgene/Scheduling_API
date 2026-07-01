@@ -1,7 +1,7 @@
 from typing import Optional
 from datetime import datetime
 from sqlmodel import SQLModel, Field, Relationship
-from app.models import User
+# from app.models.user import User
 
 
 class Appointment(SQLModel, table=True):

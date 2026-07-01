@@ -1,4 +1,6 @@
 from logging.config import fileConfig
+import os
+from dotenv import load_dotenv
 
 from sqlalchemy import engine_from_config
 from sqlalchemy import pool
@@ -6,8 +8,24 @@ from sqlalchemy import pool
 from alembic import context
 
 from sqlmodel import SQLModel
-from app.models import User, Provider, Service, Appointment # Importa todos os seus modelos
+# No alembic/env.py
+from sqlmodel import SQLModel
+# Importe diretamente dos arquivos:
+from app.models.user import User
+from app.models.provider import Provider
+from app.models.service import Service
+from app.models.appointment import Appointment
 
+target_metadata = SQLModel.metadata
+
+# 1. Carrega o .env
+load_dotenv()
+
+# 2. Pega a configuração do Alembic
+config = context.config
+
+# 3. Define a URL do banco a partir da variável de ambiente
+config.set_main_option("sqlalchemy.url", os.getenv("DATABASE_URL"))
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.

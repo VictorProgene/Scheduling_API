@@ -1,6 +1,6 @@
 from typing import Optional
 from sqlmodel import SQLModel, Field, Relationship
-from app.models import Provider
+# from app.models.provider import Provider
 
 
 class Service(SQLModel, table=True):
