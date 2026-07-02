@@ -1,14 +1,13 @@
 from sqlmodel import SQLModel
 from datetime import datetime
-from uuid import UUID
 
 class AppointmentCreate(SQLModel):
-    provider_id: UUID
-    service_id: UUID
+    provider_id: int # Alterado de UUID para int
+    service_id: int  # Alterado de UUID para int
     start_time: datetime
 
 class AppointmentResponse(AppointmentCreate):
-    id: UUID
-    user_id: UUID
+    id: int
+    user_id: int
     end_time: datetime
     status: str

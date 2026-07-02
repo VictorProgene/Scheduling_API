@@ -9,4 +9,4 @@ class ProviderCreate(SQLModel):
     end_work_time: time
 
 class ProviderResponse(ProviderCreate):
-    id: UUID
+    id: int
