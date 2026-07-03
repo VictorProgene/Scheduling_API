@@ -15,6 +15,7 @@ class Appointment(SQLModel, table=True):
 
     user_id: int = Field(foreign_key="user.id")
     provider_id: int = Field(foreign_key="provider.id")
+    service_id: int = Field(foreign_key="service.id")
 
     # Relações que fecham o ciclo com User e Provider
     user: "User" = Relationship(back_populates="appointments")
