@@ -5,6 +5,7 @@ from app.core.config import settings
 
 SECRET_KEY_CORE = settings.secret_key_core
 ALGORITHM = "HS256"
+SECRET_KEY = settings.secret_key
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 def create_access_token(data: dict):
