@@ -1,3 +1,20 @@
+"""
+appointment.py - Modelo ORM físico para a tabela de Agendamentos (Compromissos)
+
+Este arquivo define a estrutura da tabela de dados 'appointment' no banco de dados.
+Campos:
+- id: Chave primária autoincremental.
+- start_time: Horário de início do agendamento (datetime).
+- end_time: Horário estimado de encerramento do agendamento (datetime).
+- status: Estado do agendamento (ex: "pending", "confirmed").
+- user_id: ID do cliente dono do agendamento (chave estrangeira vinculada ao user).
+- provider_id: ID do profissional prestador (chave estrangeira vinculada ao provider).
+- service_id: ID do tipo de serviço contratado (chave estrangeira vinculada ao service).
+Relacionamentos:
+- user: Objeto do cliente associado.
+- provider: Objeto do profissional prestador associado.
+"""
+
 from datetime import datetime
 from typing import TYPE_CHECKING, Optional
 from sqlmodel import SQLModel, Field, Relationship

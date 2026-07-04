@@ -1,3 +1,12 @@
+"""
+appointment.py - Endpoints de Gerenciamento de Agendamentos
+
+Este arquivo expõe as rotas privadas (protegidas por token JWT) de controle de agendamentos:
+1. 'POST /' ➔ Solicita um novo agendamento. Realiza verificações de dados e enfileira o envio assíncrono do e-mail de confirmação em segundo plano.
+2. 'GET /me' ➔ Lista todos os agendamentos pertencentes apenas ao usuário que realizou a chamada (ownership).
+3. 'DELETE /{appointment_id}' ➔ Permite o cancelamento de um agendamento específico, contanto que o usuário logado seja o dono dele.
+"""
+
 from datetime import timedelta
 from typing import List
 

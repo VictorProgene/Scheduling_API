@@ -1,3 +1,13 @@
+"""
+availability.py - Regras de Negócio para Cálculo de Disponibilidade
+
+Este arquivo da camada Service contém a regra de negócio para calcular horários disponíveis.
+Responsabilidades:
+1. Obter o expediente de trabalho do prestador (start_work_hour e end_work_hour).
+2. Gerar slots de horários de hora em hora.
+3. Filtrar e retornar apenas os slots que não conflitam com agendamentos já salvos no banco.
+"""
+
 from datetime import datetime, timedelta, date
 from sqlmodel import Session, select
 from app.models.appointment import Appointment

@@ -1,3 +1,11 @@
+"""
+auth.py - Endpoints de Autenticação (Login e Registro)
+
+Este arquivo de rotas (APIRouter) expõe os endpoints públicos de segurança da API:
+1. 'POST /register' ➔ Permite o cadastro de novos usuários clientes, salvando a senha de forma segura com hash bcrypt.
+2. 'POST /login' ➔ Valida as credenciais (e-mail e senha) e emite o token de acesso JWT correspondente para chamadas futuras.
+"""
+
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlmodel import Session, select

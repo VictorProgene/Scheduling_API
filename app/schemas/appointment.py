@@ -1,3 +1,11 @@
+"""
+appointment.py - Schemas de Validação (Pydantic) para Agendamentos
+
+Este arquivo define os contratos de dados para criação e resposta de agendamentos:
+1. AppointmentCreate: Dados requeridos ao realizar um agendamento.
+2. AppointmentResponse: Dados retornados ao cliente após a criação ou consulta de agendamentos.
+"""
+
 from sqlmodel import SQLModel
 from datetime import datetime
 

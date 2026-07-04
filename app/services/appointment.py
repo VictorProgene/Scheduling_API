@@ -1,3 +1,12 @@
+"""
+appointment.py - Regras de Negócio para Criação de Agendamentos
+
+Este arquivo da camada Service contém a regra de negócio central de criação de agendamentos.
+Responsabilidades:
+1. Executar a validação matemática de interseção de intervalos de tempo para evitar conflitos de horários.
+2. Persistir o novo agendamento de forma atômica no banco de dados.
+"""
+
 from fastapi import HTTPException
 from sqlmodel import Session, select
 from app.models.appointment import Appointment

@@ -1,3 +1,13 @@
+"""
+deps.py - Dependências de Injeção de Segurança da API
+
+Este arquivo contém as funções de dependência que o FastAPI injeta dinamicamente nas rotas.
+A principal função é 'get_current_user', encarregada de:
+1. Extrair e validar o Token JWT recebido no Header de Autorização.
+2. Garantir o controle de acesso de rotas privadas (barrando requisições sem token válido).
+3. Repassar o ID do usuário autenticado para ser usado nas regras de negócio (como criar agendamento).
+"""
+
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 from jose import jwt

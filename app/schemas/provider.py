@@ -1,3 +1,12 @@
+"""
+provider.py - Schemas de Validação (Pydantic) para Prestadores e Disponibilidade
+
+Este arquivo define os contratos de dados para criação e resposta de prestadores de serviços:
+1. ProviderCreate: Estrutura dos dados enviados para cadastrar um prestador.
+2. ProviderResponse: Estrutura de retorno dos dados de um prestador contendo o ID gerado.
+3. AvailabilityResponse: Formato dos dados de listagem de horários disponíveis.
+"""
+
 from sqlmodel import SQLModel
 from uuid import UUID
 from datetime import time, date, datetime

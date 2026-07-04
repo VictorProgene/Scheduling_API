@@ -1,3 +1,11 @@
+"""
+security.py - Auxiliares de Segurança, Hashing e Criptografia JWT
+
+Este arquivo centraliza a lógica de proteção criptográfica da API, incluindo:
+1. Hasheamento e verificação de senhas de usuários (utilizando o algoritmo bcrypt via passlib).
+2. Geração de tokens de acesso JWT (Json Web Token) assinados com a chave secreta e tempo de expiração definidos.
+"""
+
 from datetime import datetime, timedelta
 from jose import jwt
 from passlib.context import CryptContext
