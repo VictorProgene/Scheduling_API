@@ -35,3 +35,16 @@ def test_availability_lists_work_hours_and_skips_busy_slot(client, db, sample_pr
         "2026-07-03T09:00:00",
         "2026-07-03T11:00:00",
     ]
+
+
+def test_list_providers_returns_all_registered_providers(client, sample_provider):
+    # Envia uma requisição GET para listar os profissionais
+    response = client.get("/providers/")
+
+    # Validações
+    assert response.status_code == 200
+    data = response.json()
+    assert len(data) == 1
+    assert data[0]["name"] == sample_provider.name
+    assert data[0]["id"] == sample_provider.id
+
