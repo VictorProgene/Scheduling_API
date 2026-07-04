@@ -1,12 +1,14 @@
 from datetime import timedelta
 from typing import List
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, BackgroundTasks
 from sqlmodel import Session, select
 from app.database.connection import get_session
 from app.schemas.appointment import AppointmentCreate, AppointmentResponse
 from app.models.appointment import Appointment
+from app.models import User, Provider
 from app.services.appointment import create_appointment
+from app.services.notification import send_appointment_email
 from app.api.deps import get_current_user
 
 router = APIRouter()
@@ -14,6 +16,7 @@ router = APIRouter()
 @router.post("/", response_model=AppointmentResponse)
 def book_appointment(
     data: AppointmentCreate,
+    background_tasks: BackgroundTasks,
     user_id: int = Depends(get_current_user), # O FastAPI bloqueia o acesso se não houver token
     db: Session = Depends(get_session)
 ):
@@ -24,7 +27,21 @@ def book_appointment(
         end_time=data.start_time + timedelta(hours=1),
         user_id=user_id
     )
-    return create_appointment(db, new_appointment)
+    saved_appointment = create_appointment(db, new_appointment)
+
+    # Busca as informações do cliente e profissional para a notificação
+    user = db.get(User, user_id)
+    provider = db.get(Provider, data.provider_id)
+
+    if user and provider:
+        background_tasks.add_task(
+            send_appointment_email,
+            email_to=user.email,
+            provider_name=provider.name,
+            start_time=saved_appointment.start_time
+        )
+
+    return saved_appointment
 
 
 @router.get("/me", response_model=List[AppointmentResponse])

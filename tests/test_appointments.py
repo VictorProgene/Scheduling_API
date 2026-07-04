@@ -1,5 +1,5 @@
 from datetime import datetime
-from app.models import Appointment
+from app.models import Appointment, User
 
 def test_create_appointment_requires_authentication(client, sample_provider, sample_service):
     response = client.post(
@@ -119,3 +119,31 @@ def test_cancel_appointment_forbidden_for_other_user(authenticated_client, db, s
     # Garante que o agendamento NÃO foi excluído do banco
     db_appointment = db.get(Appointment, appointment.id)
     assert db_appointment is not None
+
+
+def test_create_appointment_triggers_background_email(authenticated_client, db, sample_provider, sample_service, capsys):
+    # 1. Cria o usuário com ID 1 no banco para bater com o mock do get_current_user
+    user = User(id=1, name="Cliente Teste", email="cliente@example.com", password="hash_seguro")
+    db.add(user)
+    db.commit()
+    db.refresh(user)
+
+    # 2. Faz o agendamento
+    response = authenticated_client.post(
+        "/appointments/",
+        json={
+            "provider_id": sample_provider.id,
+            "service_id": sample_service.id,
+            "start_time": "2026-07-03T09:00:00",
+        },
+    )
+
+    assert response.status_code == 200
+
+    # 3. Captura o que foi impresso (print) no terminal
+    captured = capsys.readouterr()
+
+    # 4. Valida se a nossa simulação de e-mail foi disparada
+    assert "ENVIANDO E-MAIL DE CONFIRMAÇÃO" in captured.out
+    assert "cliente@example.com" in captured.out
+    assert sample_provider.name in captured.out
