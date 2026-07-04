@@ -5,8 +5,9 @@ Este arquivo expõe as rotas para o gerenciamento de serviços oferecidos:
 1. 'POST /' ➔ Cadastra um novo tipo de serviço associado a um profissional (provider_id) específico.
 """
 
+from typing import List
 from fastapi import APIRouter, Depends, HTTPException
-from sqlmodel import Session
+from sqlmodel import Session, select
 from app.database.connection import get_session
 from app.schemas.service import ServiceCreate, ServiceResponse
 from app.models.service import Service
@@ -27,3 +28,9 @@ def create_service(service_data: ServiceCreate, db: Session = Depends(get_sessio
     db.commit()
     db.refresh(new_service)
     return new_service
+
+
+@router.get("/", response_model=List[ServiceResponse])
+def list_services(db: Session = Depends(get_session)):
+    services = db.exec(select(Service)).all()
+    return services
