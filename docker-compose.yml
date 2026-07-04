@@ -8,3 +8,24 @@ services:
       POSTGRES_DB: scheduling_db
     ports:
       - "5432:5432"
+    # O container do banco fica se auto-avaliando até estar pronto para uso
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U user -d scheduling_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  web:
+    build: .
+    restart: always
+    ports:
+      - "8000:8000"
+    environment:
+      # Aponta para o serviço 'db' no host do docker
+      - DATABASE_URL=postgresql://user:password@db:5432/scheduling_db
+      - SECRET_KEY=uma_chave_bem_segura_e_longa_aqui
+      - SECRET_KEY_CORE=SUA_CHAVE_SECRETA_MUITO_SEGURA
+    # Só sobe a API quando a verificação de saúde do banco for concluída com sucesso
+    depends_on:
+      db:
+        condition: service_healthy
