@@ -6,19 +6,22 @@ Este arquivo de rotas (APIRouter) expõe os endpoints públicos de segurança da
 2. 'POST /login' ➔ Valida as credenciais (e-mail e senha) e emite o token de acesso JWT correspondente para chamadas futuras.
 """
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, Request
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlmodel import Session, select
 from app.database.connection import get_session
 from app.models import User
 from app.core.security import verify_password, create_access_token, get_password_hash
 from app.schemas.user import UserCreate, UserResponse
+from app.core.limiter import limiter
 
 router = APIRouter()
 
 
 @router.post("/login")
+@limiter.limit("5/minute")
 def login(
+        request: Request,
         form_data: OAuth2PasswordRequestForm = Depends(),
         db: Session = Depends(get_session)
 ):
@@ -40,7 +43,9 @@ def login(
 
 
 @router.post("/register", response_model=UserResponse)
+@limiter.limit("5/minute")
 def register(
+        request: Request,
         user_data: UserCreate,
         db: Session = Depends(get_session)
 ):

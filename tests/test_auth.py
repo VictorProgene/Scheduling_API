@@ -1,3 +1,13 @@
+"""
+test_auth.py - Testes de Integração para Rota de Autenticação (Login e Registro)
+
+Este arquivo valida as regras de segurança e acesso do usuário:
+1. Cadastro de novos usuários (com sucesso e impedindo e-mails duplicados).
+2. Login com sucesso (emissão de token JWT) e falha com credenciais incorretas.
+"""
+
+from app.core.limiter import limiter
+
 def test_register_creates_user(client):
     response = client.post(
         "/register",
@@ -68,3 +78,22 @@ def test_login_rejects_wrong_password(client):
     )
 
     assert response.status_code == 401
+
+
+def test_login_rate_limiting(client):
+    limiter.reset()  # Reseta o contador para isolar o teste
+    # 1. Faz 5 tentativas rápidas (limite é 5 por minuto)
+    for _ in range(5):
+        response = client.post(
+            "/login",
+            data={"username": "fake@example.com", "password": "any"},
+        )
+        assert response.status_code == 401
+
+    # 2. A 6ª tentativa deve exceder o limite e retornar 429 Too Many Requests
+    response = client.post(
+        "/login",
+        data={"username": "fake@example.com", "password": "any"},
+    )
+    assert response.status_code == 429
+    assert "Rate limit exceeded" in response.json()["error"]

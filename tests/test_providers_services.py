@@ -1,3 +1,12 @@
+"""
+test_providers_services.py - Testes de Integração para Cadastro de Profissionais e Serviços
+
+Este arquivo valida as rotas administrativas criadas para controle de catálogo:
+1. Cadastro de prestadores de serviços com validação de dados e impedimento de e-mails duplicados.
+2. Cadastro de novos tipos de serviços vinculados a prestadores de serviços existentes.
+3. Validação de integridade do banco de dados (exemplo: impedir criar serviço para profissional inexistente).
+"""
+
 import pytest
 from app.models import Provider, Service
 

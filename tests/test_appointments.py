@@ -1,3 +1,14 @@
+"""
+test_appointments.py - Testes de Integração para Rota de Agendamentos (Appointments)
+
+Este arquivo valida as regras de negócios relacionadas a agendamentos de horários:
+1. Proteção de rota (exigir token de login).
+2. Criação de agendamentos válidos e validação de conflitos de horários ocupados.
+3. Listagem exclusiva de agendamentos pertencentes ao cliente autenticado (ownership).
+4. Cancelamento seguro com validação de propriedade do agendamento (bloqueio para outros usuários).
+5. Disparo assíncrono de e-mails em segundo plano (BackgroundTasks).
+"""
+
 from datetime import datetime
 from app.models import Appointment, User
 

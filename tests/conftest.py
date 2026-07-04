@@ -1,3 +1,12 @@
+"""
+conftest.py - Configuração e Fixtures Globais de Testes com Pytest
+
+Este arquivo centraliza a configuração do ambiente de testes automatizados:
+1. Cria a engine SQLite temporária em memória para rodar os testes isolados do Postgres de produção.
+2. Define fixtures reutilizáveis para os testes (sessão do banco, cliente HTTP, profissional de teste, serviço de teste).
+3. Configura dependências mockadas (como simular login retornando ID de usuário de teste).
+"""
+
 import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy.pool import StaticPool
