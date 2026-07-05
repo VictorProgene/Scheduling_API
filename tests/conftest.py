@@ -1,10 +1,10 @@
 """
-conftest.py - Configuração e Fixtures Globais de Testes com Pytest
+conftest.py - Pytest Configuration and Global Fixtures
 
-Este arquivo centraliza a configuração do ambiente de testes automatizados:
-1. Cria a engine SQLite temporária em memória para rodar os testes isolados do Postgres de produção.
-2. Define fixtures reutilizáveis para os testes (sessão do banco, cliente HTTP, profissional de teste, serviço de teste).
-3. Configura dependências mockadas (como simular login retornando ID de usuário de teste).
+This file centralizes the automated testing environment configuration:
+1. Creates a temporary in-memory SQLite engine to run tests isolated from production Postgres.
+2. Defines reusable fixtures for tests (db session, HTTP client, sample provider, sample service).
+3. Configures mocked dependencies (such as simulating login by returning a test user ID).
 """
 
 import pytest
@@ -58,7 +58,7 @@ def authenticated_client_fixture(client):
 @pytest.fixture
 def sample_provider(db):
     provider = Provider(
-        name="Profissional Teste",
+        name="Test Provider",
         email="provider@example.com",
         start_work_hour=9,
         end_work_hour=12,
@@ -72,8 +72,8 @@ def sample_provider(db):
 @pytest.fixture
 def sample_service(db, sample_provider):
     service = Service(
-        name="Corte",
-        description="Servico de teste",
+        name="Haircut",
+        description="Test service",
         price=50.0,
         duration_minutes=60,
         provider_id=sample_provider.id,

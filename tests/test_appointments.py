@@ -1,12 +1,12 @@
 """
-test_appointments.py - Testes de Integração para Rota de Agendamentos (Appointments)
+test_appointments.py - Integration Tests for Appointment Route (Appointments)
 
-Este arquivo valida as regras de negócios relacionadas a agendamentos de horários:
-1. Proteção de rota (exigir token de login).
-2. Criação de agendamentos válidos e validação de conflitos de horários ocupados.
-3. Listagem exclusiva de agendamentos pertencentes ao cliente autenticado (ownership).
-4. Cancelamento seguro com validação de propriedade do agendamento (bloqueio para outros usuários).
-5. Disparo assíncrono de e-mails em segundo plano (BackgroundTasks).
+This file validates business rules related to time slot bookings:
+1. Route protection (require login token).
+2. Creation of valid appointments and validation of busy time slot conflicts.
+3. Exclusive listing of appointments belonging to the authenticated client (ownership).
+4. Secure cancellation with validation of appointment ownership (blocked for other users).
+5. Asynchronous dispatch of confirmation emails in the background (BackgroundTasks).
 """
 
 from datetime import datetime
@@ -56,11 +56,11 @@ def test_create_appointment_rejects_conflicting_time(authenticated_client, sampl
 
     assert first_response.status_code == 200
     assert second_response.status_code == 400
-    assert second_response.json()["detail"] == "Este horário já está ocupado."
+    assert second_response.json()["detail"] == "This time slot is already booked."
 
 
 def test_get_my_appointments(authenticated_client, sample_provider, sample_service):
-    # 1. Cria um agendamento para o usuário autenticado (user_id = 1)
+    # 1. Create an appointment for the authenticated user (user_id = 1)
     authenticated_client.post(
         "/appointments/",
         json={
@@ -70,10 +70,10 @@ def test_get_my_appointments(authenticated_client, sample_provider, sample_servi
         },
     )
 
-    # 2. Chama o GET /appointments/me
+    # 2. Call GET /appointments/me
     response = authenticated_client.get("/appointments/me")
 
-    # 3. Validações
+    # 3. Validations
     assert response.status_code == 200
     data = response.json()
     assert len(data) == 1
@@ -81,7 +81,7 @@ def test_get_my_appointments(authenticated_client, sample_provider, sample_servi
 
 
 def test_cancel_appointment_success(authenticated_client, db, sample_provider, sample_service):
-    # 1. Insere um agendamento diretamente no banco pertencente ao usuário 1
+    # 1. Insert an appointment directly into the database owned by user 1
     appointment = Appointment(
         provider_id=sample_provider.id,
         service_id=sample_service.id,
@@ -93,26 +93,26 @@ def test_cancel_appointment_success(authenticated_client, db, sample_provider, s
     db.commit()
     db.refresh(appointment)
 
-    # 2. Executa a requisição de DELETE
+    # 2. Execute DELETE request
     response = authenticated_client.delete(f"/appointments/{appointment.id}")
 
-    # 3. Validações
+    # 3. Validations
     assert response.status_code == 200
-    assert response.json()["detail"] == "Agendamento cancelado com sucesso."
+    assert response.json()["detail"] == "Appointment successfully canceled."
 
-    # Verifica se foi removido do banco
+    # Check if it was removed from the database
     appointment_id = appointment.id
-    db.expire_all() # Limpa o cache da sessão de teste
+    db.expire_all()  # Clear test session cache
     db_appointment = db.get(Appointment, appointment_id)
     assert db_appointment is None
 
 
 def test_cancel_appointment_forbidden_for_other_user(authenticated_client, db, sample_provider, sample_service):
-    # 1. Insere um agendamento pertencente ao usuário 2
+    # 1. Insert an appointment owned by user 2
     appointment = Appointment(
         provider_id=sample_provider.id,
         service_id=sample_service.id,
-        user_id=2, # Outro usuário
+        user_id=2,  # Another user
         start_time=datetime(2026, 7, 3, 9, 0),
         end_time=datetime(2026, 7, 3, 10, 0),
     )
@@ -120,26 +120,26 @@ def test_cancel_appointment_forbidden_for_other_user(authenticated_client, db, s
     db.commit()
     db.refresh(appointment)
 
-    # 2. Tenta deletar usando a sessão do Usuário 1 (authenticated_client)
+    # 2. Try to delete using User 1's session (authenticated_client)
     response = authenticated_client.delete(f"/appointments/{appointment.id}")
 
-    # 3. Validações (Deve retornar 403 Forbidden)
+    # 3. Validations (Should return 403 Forbidden)
     assert response.status_code == 403
-    assert response.json()["detail"] == "Você não tem permissão para cancelar este agendamento."
+    assert response.json()["detail"] == "You do not have permission to cancel this appointment."
 
-    # Garante que o agendamento NÃO foi excluído do banco
+    # Ensure the appointment was NOT deleted from the database
     db_appointment = db.get(Appointment, appointment.id)
     assert db_appointment is not None
 
 
 def test_create_appointment_triggers_background_email(authenticated_client, db, sample_provider, sample_service, capsys):
-    # 1. Cria o usuário com ID 1 no banco para bater com o mock do get_current_user
-    user = User(id=1, name="Cliente Teste", email="cliente@example.com", password="hash_seguro")
+    # 1. Create user with ID 1 in the database to match get_current_user mock
+    user = User(id=1, name="Test Client", email="client@example.com", password="secure_hash")
     db.add(user)
     db.commit()
     db.refresh(user)
 
-    # 2. Faz o agendamento
+    # 2. Book appointment
     response = authenticated_client.post(
         "/appointments/",
         json={
@@ -151,10 +151,10 @@ def test_create_appointment_triggers_background_email(authenticated_client, db, 
 
     assert response.status_code == 200
 
-    # 3. Captura o que foi impresso (print) no terminal
+    # 3. Capture terminal prints (stdout)
     captured = capsys.readouterr()
 
-    # 4. Valida se a nossa simulação de e-mail foi disparada
-    assert "ENVIANDO E-MAIL DE CONFIRMAÇÃO" in captured.out
-    assert "cliente@example.com" in captured.out
+    # 4. Validate if our simulated email notification was triggered
+    assert "SENDING CONFIRMATION EMAIL" in captured.out
+    assert "client@example.com" in captured.out
     assert sample_provider.name in captured.out

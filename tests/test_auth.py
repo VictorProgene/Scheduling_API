@@ -1,9 +1,9 @@
 """
-test_auth.py - Testes de Integração para Rota de Autenticação (Login e Registro)
+test_auth.py - Integration Tests for Authentication Route (Login and Register)
 
-Este arquivo valida as regras de segurança e acesso do usuário:
-1. Cadastro de novos usuários (com sucesso e impedindo e-mails duplicados).
-2. Login com sucesso (emissão de token JWT) e falha com credenciais incorretas.
+This file validates user security and access rules:
+1. Registration of new users (successful and preventing duplicate emails).
+2. Successful login (issuing JWT token) and failure with incorrect credentials.
 """
 
 from app.core.limiter import limiter
@@ -12,24 +12,24 @@ def test_register_creates_user(client):
     response = client.post(
         "/register",
         json={
-            "name": "Usuario Teste",
-            "email": "usuario@example.com",
+            "name": "Test User",
+            "email": "user@example.com",
             "password": "123456",
         },
     )
 
     assert response.status_code == 200
     data = response.json()
-    assert data["name"] == "Usuario Teste"
-    assert data["email"] == "usuario@example.com"
+    assert data["name"] == "Test User"
+    assert data["email"] == "user@example.com"
     assert "id" in data
     assert "password" not in data
 
 
 def test_register_rejects_duplicate_email(client):
     payload = {
-        "name": "Usuario Teste",
-        "email": "usuario@example.com",
+        "name": "Test User",
+        "email": "user@example.com",
         "password": "123456",
     }
 
@@ -38,22 +38,22 @@ def test_register_rejects_duplicate_email(client):
 
     assert first_response.status_code == 200
     assert second_response.status_code == 400
-    assert second_response.json()["detail"] == "E-mail j\u00e1 cadastrado"
+    assert second_response.json()["detail"] == "Email already registered"
 
 
 def test_login_returns_access_token(client):
     client.post(
         "/register",
         json={
-            "name": "Usuario Teste",
-            "email": "usuario@example.com",
+            "name": "Test User",
+            "email": "user@example.com",
             "password": "123456",
         },
     )
 
     response = client.post(
         "/login",
-        data={"username": "usuario@example.com", "password": "123456"},
+        data={"username": "user@example.com", "password": "123456"},
     )
 
     assert response.status_code == 200
@@ -66,23 +66,23 @@ def test_login_rejects_wrong_password(client):
     client.post(
         "/register",
         json={
-            "name": "Usuario Teste",
-            "email": "usuario@example.com",
+            "name": "Test User",
+            "email": "user@example.com",
             "password": "123456",
         },
     )
 
     response = client.post(
         "/login",
-        data={"username": "usuario@example.com", "password": "senha-errada"},
+        data={"username": "user@example.com", "password": "wrong-password"},
     )
 
     assert response.status_code == 401
 
 
 def test_login_rate_limiting(client):
-    limiter.reset()  # Reseta o contador para isolar o teste
-    # 1. Faz 5 tentativas rápidas (limite é 5 por minuto)
+    limiter.reset()  # Reset the counter to isolate the test
+    # 1. Make 5 quick attempts (limit is 5 per minute)
     for _ in range(5):
         response = client.post(
             "/login",
@@ -90,7 +90,7 @@ def test_login_rate_limiting(client):
         )
         assert response.status_code == 401
 
-    # 2. A 6ª tentativa deve exceder o limite e retornar 429 Too Many Requests
+    # 2. The 6th attempt should exceed the limit and return 429 Too Many Requests
     response = client.post(
         "/login",
         data={"username": "fake@example.com", "password": "any"},

@@ -1,11 +1,11 @@
 """
-test_availability.py - Testes de Integração para Rota de Disponibilidade e Prestadores
+test_availability.py - Integration Tests for Availability and Providers Routes
 
-Este arquivo valida as regras de consulta de horários e listagem de profissionais:
-1. Consulta de agenda para prestador inexistente (esperado lista vazia).
-2. Geração de slots livres e exclusão de horários em que o profissional já tem compromisso.
-3. Listagem de todos os prestadores cadastrados.
-4. Verificação de controle de vazão de requisições (Rate Limiting).
+This file validates schedule querying and provider listing rules:
+1. Schedule query for non-existent provider (expects empty list).
+2. Generation of free slots and exclusion of times when the provider is busy.
+3. Listing of all registered providers.
+4. Validation of request rate limiting (Rate Limiting).
 """
 
 from datetime import date, datetime
@@ -49,10 +49,10 @@ def test_availability_lists_work_hours_and_skips_busy_slot(client, db, sample_pr
 
 
 def test_list_providers_returns_all_registered_providers(client, sample_provider):
-    # Envia uma requisição GET para listar os profissionais
+    # Send GET request to list providers
     response = client.get("/providers/")
 
-    # Validações
+    # Validations
     assert response.status_code == 200
     data = response.json()
     assert len(data) == 1
@@ -61,8 +61,8 @@ def test_list_providers_returns_all_registered_providers(client, sample_provider
 
 
 def test_availability_rate_limiting(client, sample_provider):
-    limiter.reset()  # Reseta o contador para isolar o teste
-    # 1. Faz 5 requisições rápidas (limite é 5 por minuto)
+    limiter.reset()  # Reset the counter to isolate the test
+    # 1. Make 5 quick requests (limit is 5 per minute)
     for _ in range(5):
         response = client.get(
             f"/providers/{sample_provider.id}/availability",
@@ -70,11 +70,10 @@ def test_availability_rate_limiting(client, sample_provider):
         )
         assert response.status_code == 200
 
-    # 2. A 6ª requisição deve exceder o limite e retornar 429 Too Many Requests
+    # 2. The 6th request should exceed the limit and return 429 Too Many Requests
     response = client.get(
         f"/providers/{sample_provider.id}/availability",
         params={"target_date": "2026-07-03"},
     )
     assert response.status_code == 429
     assert "Rate limit exceeded" in response.json()["error"]
-

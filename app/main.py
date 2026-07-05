@@ -1,10 +1,10 @@
 """
-main.py - Ponto de Entrada da Aplicação
+main.py - Application Entry Point
 
-Este arquivo é o inicializador (bootstrapper) do servidor FastAPI. Ele é encarregado de:
-1. Instanciar o aplicativo FastAPI.
-2. Reunir e incluir os roteadores (APIRouter) de todas as rotas do sistema (Auth, Providers, Appointments).
-3. Configurar os prefixos de URL e tags de organização para a documentação interativa (Swagger).
+This file is the bootstrapper for the FastAPI server. It is responsible for:
+1. Instantiating the FastAPI application.
+2. Gathering and including routers (APIRouter) for all system endpoints (Auth, Providers, Appointments).
+3. Configuring URL prefixes and tags for interactive documentation (Swagger).
 """
 
 from fastapi import FastAPI

@@ -1,9 +1,9 @@
 """
-auth.py - Endpoints de Autenticação (Login e Registro)
+auth.py - Authentication Endpoints (Login and Register)
 
-Este arquivo de rotas (APIRouter) expõe os endpoints públicos de segurança da API:
-1. 'POST /register' ➔ Permite o cadastro de novos usuários clientes, salvando a senha de forma segura com hash bcrypt.
-2. 'POST /login' ➔ Valida as credenciais (e-mail e senha) e emite o token de acesso JWT correspondente para chamadas futuras.
+This route file (APIRouter) exposes public API security endpoints:
+1. 'POST /register' ➔ Allows client registration, hashing the password securely with bcrypt.
+2. 'POST /login' ➔ Validates credentials (email and password) and issues the corresponding JWT access token for future calls.
 """
 
 from fastapi import APIRouter, Depends, HTTPException, status, Request
@@ -25,18 +25,18 @@ def login(
         form_data: OAuth2PasswordRequestForm = Depends(),
         db: Session = Depends(get_session)
 ):
-    # 1. Busca o usuário pelo e-mail
+    # 1. Find user by email
     statement = select(User).where(User.email == form_data.username)
     user = db.exec(statement).first()
 
-    # 2. Verifica se o usuário existe e se a senha está correta
+    # 2. Check if user exists and password is correct
     if not user or not verify_password(form_data.password, user.password):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="E-mail ou senha incorretos"
+            detail="Incorrect email or password"
         )
 
-    # 3. Gera o Token JWT
+    # 3. Generate JWT Token
     access_token = create_access_token(data={"sub": str(user.id)})
 
     return {"access_token": access_token, "token_type": "bearer"}
@@ -49,12 +49,12 @@ def register(
         user_data: UserCreate,
         db: Session = Depends(get_session)
 ):
-    # 1. Verifica se o e-mail já existe
+    # 1. Check if email is already registered
     existing_user = db.exec(select(User).where(User.email == user_data.email)).first()
     if existing_user:
-        raise HTTPException(status_code=400, detail="E-mail já cadastrado")
+        raise HTTPException(status_code=400, detail="Email already registered")
 
-    # 2. Cria o usuário com a senha hasheada
+    # 2. Create user with hashed password
     hashed_password = get_password_hash(user_data.password)
     new_user = User(
         name=user_data.name,

@@ -1,8 +1,8 @@
 """
-limiter.py - Configuração Global de Controle de Taxa de Requisições (Rate Limiting)
+limiter.py - Global Rate Limiting Configuration
 
-Este arquivo define e expõe a instância global do Limiter.
-Utiliza a função 'get_remote_address' para identificar e limitar requisições baseando-se no endereço IP do cliente.
+This file defines and exposes the global Limiter instance.
+It uses the 'get_remote_address' function to identify and limit requests based on the client's IP address.
 """
 
 from slowapi import Limiter

@@ -1,10 +1,10 @@
 """
-appointment.py - Endpoints de Gerenciamento de Agendamentos
+appointment.py - Appointment Management Endpoints
 
-Este arquivo expõe as rotas privadas (protegidas por token JWT) de controle de agendamentos:
-1. 'POST /' ➔ Solicita um novo agendamento. Realiza verificações de dados e enfileira o envio assíncrono do e-mail de confirmação em segundo plano.
-2. 'GET /me' ➔ Lista todos os agendamentos pertencentes apenas ao usuário que realizou a chamada (ownership).
-3. 'DELETE /{appointment_id}' ➔ Permite o cancelamento de um agendamento específico, contanto que o usuário logado seja o dono dele.
+This file exposes private routes (protected by JWT token) for appointment management:
+1. 'POST /' ➔ Requests a new appointment. Performs data checks and enqueues asynchronous confirmation email delivery in the background.
+2. 'GET /me' ➔ Lists all appointments belonging exclusively to the authenticated caller (ownership).
+3. 'DELETE /{appointment_id}' ➔ Allows cancellation of a specific appointment, provided the logged-in user is the owner.
 """
 
 from datetime import timedelta
@@ -22,15 +22,16 @@ from app.api.deps import get_current_user
 
 router = APIRouter()
 
+
 @router.post("/", response_model=AppointmentResponse)
 def book_appointment(
     data: AppointmentCreate,
     background_tasks: BackgroundTasks,
-    user_id: int = Depends(get_current_user), # O FastAPI bloqueia o acesso se não houver token
+    user_id: int = Depends(get_current_user),  # FastAPI blocks access if token is missing
     db: Session = Depends(get_session)
 ):
-    # Aqui calculamos o end_time (simples exemplo)
-    # Em produção, você buscaria a duration_minutes do Service
+    # Here we calculate end_time (simple example)
+    # In production, you would fetch duration_minutes from the Service
     new_appointment = Appointment(
         **data.model_dump(),
         end_time=data.start_time + timedelta(hours=1),
@@ -38,7 +39,7 @@ def book_appointment(
     )
     saved_appointment = create_appointment(db, new_appointment)
 
-    # Busca as informações do cliente e profissional para a notificação
+    # Fetch client and provider info for the notification
     user = db.get(User, user_id)
     provider = db.get(Provider, data.provider_id)
 
@@ -58,7 +59,7 @@ def get_my_appointments(
     user_id: int = Depends(get_current_user),
     db: Session = Depends(get_session)
 ):
-    # Busca apenas os agendamentos pertencentes ao usuário autenticado
+    # Fetch only appointments belonging to the authenticated user
     appointments = db.exec(
         select(Appointment).where(Appointment.user_id == user_id)
     ).all()
@@ -71,22 +72,22 @@ def cancel_appointment(
     user_id: int = Depends(get_current_user),
     db: Session = Depends(get_session)
 ):
-    # 1. Busca o agendamento no banco
+    # 1. Fetch appointment from database
     appointment = db.get(Appointment, appointment_id)
     if not appointment:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, 
-            detail="Agendamento não encontrado."
+            detail="Appointment not found."
         )
 
-    # 2. Validação de Segurança: O usuário logado é dono deste agendamento?
+    # 2. Security Validation: Is the logged-in user the owner of this appointment?
     if appointment.user_id != user_id:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail="Você não tem permissão para cancelar este agendamento."
+            detail="You do not have permission to cancel this appointment."
         )
 
-    # 3. Deleta do banco
+    # 3. Delete from database
     db.delete(appointment)
     db.commit()
-    return {"detail": "Agendamento cancelado com sucesso."}
+    return {"detail": "Appointment successfully canceled."}

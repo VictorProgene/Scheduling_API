@@ -1,9 +1,9 @@
 """
-availability.py - Endpoints de Prestadores e Consulta de Disponibilidade
+availability.py - Providers and Availability Query Endpoints
 
-Este arquivo mapeia as rotas vinculadas ao prefixo '/providers' para gerenciamento de profissionais:
-1. 'GET /' ➔ Lista todos os profissionais prestadores de serviços cadastrados no banco de dados.
-2. 'GET /{provider_id}/availability' ➔ Calcula e lista os slots de horários livres de um profissional específico para uma data fornecida.
+This file maps routes associated with the '/providers' prefix for professional management:
+1. 'GET /' ➔ Lists all registered service providers in the database.
+2. 'GET /{provider_id}/availability' ➔ Calculates and lists available time slots for a specific provider on a given date.
 """
 
 from fastapi import APIRouter, Depends, HTTPException, Request
@@ -21,7 +21,7 @@ router = APIRouter()
 
 @router.get("/", response_model=List[ProviderResponse])
 def list_providers(db: Session = Depends(get_session)):
-    # Query para buscar todos os profissionais cadastrados
+    # Query to fetch all registered providers
     providers = db.exec(select(Provider)).all()
     return providers
 
@@ -44,15 +44,14 @@ def list_availability(
 
 @router.post("/", response_model=ProviderResponse)
 def create_provider(provider_data: ProviderCreate, db: Session = Depends(get_session)):
-    # 1. Verifica se o e-mail do profissional já está cadastrado
+    # 1. Check if provider email is already registered
     existing = db.exec(select(Provider).where(Provider.email == provider_data.email)).first()
     if existing:
-        raise HTTPException(status_code=400, detail="Este e-mail de profissional já está cadastrado.")
+        raise HTTPException(status_code=400, detail="This provider email is already registered.")
     
-    # 2. Cria e salva o profissional
+    # 2. Create and save the provider
     new_provider = Provider(**provider_data.model_dump())
     db.add(new_provider)
     db.commit()
     db.refresh(new_provider)
     return new_provider
-

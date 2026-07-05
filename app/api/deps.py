@@ -1,11 +1,11 @@
 """
-deps.py - Dependências de Injeção de Segurança da API
+deps.py - API Security Dependency Injection
 
-Este arquivo contém as funções de dependência que o FastAPI injeta dinamicamente nas rotas.
-A principal função é 'get_current_user', encarregada de:
-1. Extrair e validar o Token JWT recebido no Header de Autorização.
-2. Garantir o controle de acesso de rotas privadas (barrando requisições sem token válido).
-3. Repassar o ID do usuário autenticado para ser usado nas regras de negócio (como criar agendamento).
+This file contains dependency functions dynamically injected by FastAPI into routes.
+The main function is 'get_current_user', which is responsible for:
+1. Extracting and validating the JWT token received in the Authorization header.
+2. Securing private endpoints (rejecting requests without a valid token).
+3. Passing the authenticated user ID to be used in business logic.
 """
 
 from fastapi import Depends, HTTPException, status
@@ -21,6 +21,6 @@ def get_current_user(token: str = Depends(oauth2_scheme)):
         user_id: int = int(payload.get("sub"))
         if user_id is None:
             raise HTTPException(status_code=401)
-        return user_id # Retorna o ID do usuário para a rota
+        return user_id  # Returns the user ID to the route
     except:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Token inválido")
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid token")
