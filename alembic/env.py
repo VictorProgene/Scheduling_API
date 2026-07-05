@@ -18,16 +18,12 @@ from app.models.appointment import Appointment
 
 target_metadata = SQLModel.metadata
 
-# 1. Load the .env file if present
-load_dotenv()
-
-# 2. Get the Alembic configuration object
+# 1. Get the Alembic configuration object
 config = context.config
 
-# 3. Set the database URL from the environment variable
-db_url = os.getenv("DATABASE_URL")
-if db_url:
-    config.set_main_option("sqlalchemy.url", db_url)
+# 2. Set the database URL from Pydantic Settings
+from app.core.config import settings
+config.set_main_option("sqlalchemy.url", settings.database_url)
 
 # Interpret the config file for Python logging.
 # This line sets up loggers basically.
