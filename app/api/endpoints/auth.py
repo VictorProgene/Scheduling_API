@@ -14,8 +14,21 @@ from app.models import User
 from app.core.security import verify_password, create_access_token, get_password_hash
 from app.schemas.user import UserCreate, UserResponse
 from app.core.limiter import limiter
+from app.api.deps import get_current_user
 
 router = APIRouter()
+
+
+@router.get("/users/me", response_model=UserResponse)
+def read_users_me(
+        current_user_id: int = Depends(get_current_user),
+        db: Session = Depends(get_session)
+):
+    user = db.get(User, current_user_id)
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    return user
+
 
 
 @router.post("/login")
