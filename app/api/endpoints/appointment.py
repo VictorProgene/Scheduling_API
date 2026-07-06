@@ -13,7 +13,7 @@ from typing import List
 from fastapi import APIRouter, Depends, HTTPException, status, BackgroundTasks
 from sqlmodel import Session, select
 from app.database.connection import get_session
-from app.schemas.appointment import AppointmentCreate, AppointmentResponse
+from app.schemas.appointment import AppointmentCreate, AppointmentResponse, BarberAppointmentResponse
 from app.models.appointment import Appointment
 from app.models import User, Provider
 from app.services.appointment import create_appointment
@@ -91,3 +91,41 @@ def cancel_appointment(
     db.delete(appointment)
     db.commit()
     return {"detail": "Appointment successfully canceled."}
+
+
+@router.get("/provider", response_model=List[BarberAppointmentResponse])
+def get_provider_appointments(
+    user_id: int = Depends(get_current_user),
+    db: Session = Depends(get_session)
+):
+    # Find the provider associated with this user
+    provider = db.exec(select(Provider).where(Provider.user_id == user_id)).first()
+    if not provider:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="No provider associated with this user."
+        )
+    
+    # Query appointments and join User to get client details
+    results = db.exec(
+        select(Appointment, User)
+        .join(User, Appointment.user_id == User.id)
+        .where(Appointment.provider_id == provider.id)
+    ).all()
+    
+    appointments = []
+    for apt, user in results:
+        appointments.append(
+            BarberAppointmentResponse(
+                id=apt.id,
+                provider_id=apt.provider_id,
+                service_id=apt.service_id,
+                start_time=apt.start_time,
+                end_time=apt.end_time,
+                status=apt.status,
+                user_id=apt.user_id,
+                client_name=user.name,
+                client_email=user.email
+            )
+        )
+    return appointments

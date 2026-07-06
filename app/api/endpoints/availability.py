@@ -13,7 +13,8 @@ from typing import List
 from app.database.connection import get_session
 from app.services.availability import get_available_slots
 from app.schemas.provider import AvailabilityResponse, ProviderResponse, ProviderCreate
-from app.models import Provider
+from app.models import Provider, User
+from app.core.security import get_password_hash
 from app.core.limiter import limiter
 
 router = APIRouter()
@@ -44,13 +45,32 @@ def list_availability(
 
 @router.post("/", response_model=ProviderResponse)
 def create_provider(provider_data: ProviderCreate, db: Session = Depends(get_session)):
-    # 1. Check if provider email is already registered
-    existing = db.exec(select(Provider).where(Provider.email == provider_data.email)).first()
-    if existing:
+    # 1. Check if provider email is already registered in Provider table or User table
+    existing_provider = db.exec(select(Provider).where(Provider.email == provider_data.email)).first()
+    if existing_provider:
         raise HTTPException(status_code=400, detail="This provider email is already registered.")
     
-    # 2. Create and save the provider
-    new_provider = Provider(**provider_data.model_dump())
+    existing_user = db.exec(select(User).where(User.email == provider_data.email)).first()
+    if existing_user:
+        raise HTTPException(status_code=400, detail="A user with this email is already registered.")
+    
+    # 2. Create and save corresponding login User
+    provider_dict = provider_data.model_dump()
+    password = provider_dict.pop("password", None) or "Barber123!"
+    hashed_pw = get_password_hash(password)
+    
+    new_user = User(
+        name=provider_data.name,
+        email=provider_data.email,
+        password=hashed_pw,
+        role="provider"
+    )
+    db.add(new_user)
+    db.commit()
+    db.refresh(new_user)
+    
+    # 3. Create and save the provider linked to the new user
+    new_provider = Provider(**provider_dict, user_id=new_user.id)
     db.add(new_provider)
     db.commit()
     db.refresh(new_provider)

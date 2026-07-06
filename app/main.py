@@ -12,7 +12,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from slowapi.errors import RateLimitExceeded
 from slowapi import _rate_limit_exceeded_handler
 from app.core.limiter import limiter
-from app.api.endpoints import availability, appointment, auth, service
+from app.api.endpoints import availability, appointment, auth, service, admin
 from app import models
 
 app = FastAPI()
@@ -32,3 +32,4 @@ app.include_router(availability.router, prefix="/providers", tags=["Availability
 app.include_router(auth.router, tags=["Authentication"])
 app.include_router(appointment.router, prefix="/appointments", tags=["Appointments"])
 app.include_router(service.router, prefix="/services", tags=["Services"])
+app.include_router(admin.router, prefix="/admin", tags=["Administration"])

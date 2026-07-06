@@ -23,6 +23,7 @@ class User(SQLModel, table=True):
     name: str
     email: str = Field(index=True, unique=True)
     password: str
+    role: str = Field(default="client")
 
     # Relação com Appointment
     appointments: list["Appointment"] = Relationship(back_populates="user")

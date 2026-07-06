@@ -10,16 +10,18 @@ Este arquivo define os contratos de dados para criação e resposta de prestador
 from sqlmodel import SQLModel
 from uuid import UUID
 from datetime import time, date, datetime
-from typing import List
+from typing import List, Optional
 
 class ProviderCreate(SQLModel):
     name: str
     email: str
     start_work_hour: int
     end_work_hour: int
+    password: Optional[str] = None
 
 class ProviderResponse(ProviderCreate):
     id: int
+    user_id: Optional[int] = None
 
 class AvailabilityResponse(SQLModel):
     provider_id: int

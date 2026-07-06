@@ -27,6 +27,7 @@ class Provider(SQLModel, table=True):
     email: str = Field(index=True, unique=True)
     start_work_hour: int = Field(default=9)
     end_work_hour: int = Field(default=18)
+    user_id: Optional[int] = Field(default=None, foreign_key="user.id")
 
     # Relações
     services: list["Service"] = Relationship(back_populates="provider")

@@ -19,3 +19,25 @@ class AppointmentResponse(AppointmentCreate):
     user_id: int
     end_time: datetime
     status: str
+
+class BarberAppointmentResponse(SQLModel):
+    id: int
+    provider_id: int
+    service_id: int
+    start_time: datetime
+    end_time: datetime
+    status: str
+    user_id: int
+    client_name: str
+    client_email: str
+
+class AdminAppointmentResponse(SQLModel):
+    id: int
+    start_time: datetime
+    end_time: datetime
+    status: str
+    client_name: str
+    client_email: str
+    provider_name: str
+    service_name: str
+    price: float

@@ -18,3 +18,4 @@ class UserResponse(SQLModel):
     id: int  # Alterado de UUID para int
     email: EmailStr
     name: str
+    role: str
